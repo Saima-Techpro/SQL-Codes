@@ -1,0 +1,250 @@
+-- RECAP Conditions and WILDCARDS
+-- EXISTS, LIKE and NOT LIKE, REGEXP_LIKE
+-- WILDCARDS  are used with LIKE and NOT LIKE conditions
+-- REGEXP are used with LIKE in this way REGEXP_LIKE
+
+--HW
+--Select states whose third character is 'o' or 'x'
+--Select states whose third character from the end is not "n" or "x"
+
+--Select states whose third character is 'o' or 'x'
+--1st way:
+SELECT DISTINCT state
+FROM employees
+WHERE state LIKE '__o%' OR state LIKE '__x%';
+
+-- 2nd way:
+SELECT DISTINCT state
+FROM employees
+WHERE state ~ '..[ox]';
+
+-- A student tried the same code with workers table ... but it didn't follow the 3rd character rule in this code '..[ox]';
+--SELECT name
+--FROM workers
+-- WHERE name ~ '..[ox]';
+
+--3rd way:
+SELECT DISTINCT state
+FROM employees
+WHERE REGEXP_LIKE (state, '[..ox](.*)');
+
+--Select states whose third character from the end is not "n" or "x"
+-- 1st way:
+SELECT DISTINCT state
+FROM employees
+WHERE state NOT LIKE '%n__' AND state NOT LIKE '%x__';  -- Using the AND operator tells SQL that both conditions MUST be fulfilled for the record to be included in the result set.
+
+-- 2nd way:
+SELECT DISTINCT state
+FROM employees
+WHERE state ~ '[^nx]..$';
+
+
+----------------------------------------------------------------------------------------------
+-- ORDER BY:
+--         It is used to sort the values in the given field in ascending or descending order
+--         By default, it shows natural order (ascending order for numbers, alphabetical order for letters)
+--         Use DESC if you want to reverse the order
+--         It is used with SELECT statements
+
+CREATE TABLE words (
+  word_id CHAR(10) UNIQUE,
+  word VARCHAR(50) NOT NULL,
+  number_of_letters SMALLINT
+)
+
+INSERT INTO words VALUES (1001, 'hot', 3);
+INSERT INTO words VALUES (1002, 'hat', 3);
+INSERT INTO words VALUES (1003, 'hit', 3);
+INSERT INTO words VALUES (1004, 'hbt', 3);
+INSERT INTO words VALUES (1008, 'hct', 3);
+INSERT INTO words VALUES (1005, 'adem', 4);
+INSERT INTO words VALUES (1006, 'selena', 6);
+INSERT INTO words VALUES (1007, 'yusuf', 5);
+
+SELECT * FROM words;
+
+--Put the records in ascending order by using number_of_letters
+SELECT *
+FROM words
+ORDER BY number_of_letters ASC; --ASC is optional if you do not type "ASC" SQL will give the data in ascending order by default.
+
+-- we can also type field number to reach out to the required field
+-- number_of_letters is 3rd column in our database, we can just write 3 to get the values from the 3rd field
+
+SELECT *
+FROM words
+ORDER BY 3 ASC; --3 stands for field number for the given field
+
+--In ORDER BY, instead of field names, field numbers can be used as well
+
+--Put the records in descending order by using word field
+SELECT *
+FROM words
+ORDER BY word DESC;    --DESC is not optional if you want to receive the records in descending order
+
+SELECT *
+FROM words
+ORDER BY 2 DESC;
+---------------------------------------------------------------------------------------------
+CREATE TABLE points (
+    name VARCHAR(50),
+    point SMALLINT
+)
+
+INSERT INTO points values('Ali', 25);
+INSERT INTO points values('Veli', 37);
+INSERT INTO points values('Kemal', 43);
+INSERT INTO points values('Ali', 36);
+INSERT INTO points values('Ali', 25);
+INSERT INTO points values('Veli', 29);
+INSERT INTO points values('Ali', 45);
+INSERT INTO points values('Veli', 11);
+INSERT INTO points values('Ali', 125);
+
+SELECT * FROM points
+
+--Put the records in descending order by using name field, and ascending order by using points
+SELECT *
+FROM points
+ORDER BY name DESC, point ASC;
+---------------------------------------------------------------------------------------------
+CREATE TABLE employees(
+  employee_id CHAR(9),
+  employee_first_name VARCHAR(20),
+  employee_last_name VARCHAR(20)
+)
+
+INSERT INTO employees VALUES(14, 'Chris', 'Tae');
+INSERT INTO employees VALUES(11, 'John', 'Walker');
+INSERT INTO employees VALUES(12, 'Amy', 'Star');
+INSERT INTO employees VALUES(13, 'Brad', 'Pitt');
+INSERT INTO employees VALUES(15, 'Chris', 'Way');
+
+SELECT * FROM employees;
+
+
+CREATE TABLE addresses(
+  employee_id CHAR(9),
+  street VARCHAR(20),
+  city VARCHAR(20),
+  state CHAR(2),
+  zipcode CHAR(5)
+)
+
+INSERT INTO addresses VALUES(11, '32nd Star 1234', 'Miami', 'FL', '33018');
+INSERT INTO addresses VALUES(12, '23rd Rain 567', 'Jacksonville', 'FL', '32256');
+INSERT INTO addresses VALUES(13, '5th Snow 765', 'Hialeah', 'VA', '20121');
+INSERT INTO addresses VALUES(14, '3rd Man 12', 'Weston', 'MI', '12345');
+INSERT INTO addresses VALUES(15, '11th Chris 12', 'St. Johns', 'FL', '32259');
+
+SELECT * FROM addresses;
+
+--ALIAS --> used to create temporary names for the fields
+-- We can also use ALIAS for table names as well
+--How to use alias for table names?
+
+--1)Select employee_first_name and state, for employee first name use "firstname" as field name
+--and for state use "employee state" as field name
+
+SELECT employees.employee_first_name AS firstname, addresses.state AS "employee state" -- we use "" around field temp name if we want to use a space in between the two names
+FROM employees , addresses
+WHERE employees.employee_id=addresses.employee_id;
+
+-- With ALIAS for table names
+SELECT e.employee_first_name AS firstname, a.state AS "employee state"
+FROM employees e, addresses a
+WHERE e.employee_id=a.employee_id;
+
+--How to put multiple fields into one field and use alias for naming the field
+--2)Get employee id use "id" as field name, get firstname and lastname put them into the same field and use "full_name" as field name
+
+SELECT employee_id AS id, employee_first_name || ' ' || employee_last_name AS full_name
+FROM employees;
+
+--2nd way:
+SELECT employee_id AS id, CONCAT(employee_first_name,' ', employee_last_name) AS full_name
+FROM employees;
+
+------------------------------------------------------------------------------------------------
+--GROUP BY:
+
+--      It is used to show one value per grouped field
+(It helps collect/group the data related to the same field in one field)
+(e.g. same worker's earnings from different companies can be summed up maybe for tax calculation of the company etc.)
+--      This clause is mostly used with aggregate functions
+--      WHERE condition (to filter the data / to apply conditions) should be used before GROUP BY clause
+
+-- GROUP BY:
+--         It is used to group the related data in one field
+--         It is mostly used with aggregate functions
+--         WHERE condition (to filter the data) can NOT be used after GROUP BY
+--         You can sort the fields using ORDER BY clause, but it takes only option either ASC or DESC
+
+CREATE TABLE workers(
+  id CHAR(9),
+  name VARCHAR(50),
+  state VARCHAR(50),
+  salary SMALLINT,
+  company VARCHAR(20)
+)
+
+INSERT INTO workers VALUES(123456789, 'John Walker', 'Florida', 2500, 'IBM');
+INSERT INTO workers VALUES(234567890, 'Brad Pitt', 'Florida', 1500, 'APPLE');
+INSERT INTO workers VALUES(345678901, 'Eddie Murphy', 'Texas', 3000, 'IBM');
+INSERT INTO workers VALUES(456789012, 'Eddie Murphy', 'Virginia', 1000, 'GOOGLE');
+INSERT INTO workers VALUES(567890123, 'Eddie Murphy', 'Texas', 7000, 'MICROSOFT');
+INSERT INTO workers VALUES(456789012, 'Brad Pitt', 'Texas', 1500, 'GOOGLE');
+INSERT INTO workers VALUES(123456710, 'Mark Stone', 'Pennsylvania', 2500, 'IBM');
+
+SELECT * FROM workers;
+
+--Find the total salary for every employee
+
+SELECT name, SUM(salary) AS total_salary
+FROM workers
+GROUP BY name
+ORDER BY total_salary ASC;
+
+
+--Find the number of employees per state in descending order by employee number
+SELECT state, COUNT(state) AS number_of_employees
+FROM workers
+GROUP BY state
+ORDER BY number_of_employees; OR DESC
+
+-- Aggregate functions in SQL => MAX, MIN, AVG, COUNT, SUM
+
+--Find the number of the employees whose salary is more than $2000 per company
+SELECT company, COUNT(company) AS number_of_employees
+FROM workers
+WHERE salary>2000
+GROUP BY company;
+
+--Find the minimum and maximum salary for every company
+
+SELECT company,MIN(salary) AS minimum_salary, MAX(salary) AS maximum_salary
+FROM workers
+GROUP BY company;
+
+---------------------------------------------------------------------------------------------
+--HAVING CLAUSE
+--        It is used with SELECT
+--        It is helps to apply conditions / filter (Like WHERE)
+--        It is used after GROUP BY in place of WHERE
+--        Difference:
+--                  1) WHERE is used to filter individual/single row; HAVING is used to filter groups
+--                  2) You can't use Aggregate Functions (like MAX, MIN, AVG, SUM, COUNT) after WHERE condition; but you use them after HAVING clause
+
+
+--Find the total salary if it is greater than 2500 for every employee
+SELECT name, SUM(salary) AS total_salary
+FROM workers
+GROUP BY name
+HAVING SUM(salary)>2500;
+
+--Find the number of employees if it is more than 1 per state
+SELECT state, COUNT(state) AS number_of_employees
+FROM workers
+GROUP BY state
+HAVING COUNT(state)>1;

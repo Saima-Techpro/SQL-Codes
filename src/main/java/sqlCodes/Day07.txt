@@ -1,0 +1,181 @@
+-- JOINS: are used to combine the data of teh two tables
+-- INNER JOIN: it returns data that's common between the 2 tables
+-- LEFT JOIN: all data from the left table + the common data
+-- RIGHT JOIN: all data from right table + the common data
+-- FULL JOIN: all data from both tables
+-- SELF JOIN: data from the table ITSELF is manipulated
+--     NOTE:  Postgre SQL doesn't accept 'SELF JOIN' term;
+--            it creates the link with the table itself through INNER JOIN
+--   Oracle SQL accepts SELF JOIN keyword
+
+CREATE TABLE workers(
+  id CHAR(2),
+  name VARCHAR(20),
+  title VARCHAR(40),
+  manager_id CHAR(2)
+);
+
+INSERT INTO workers VALUES(1, 'Ali Can', 'SDET', 2);
+INSERT INTO workers VALUES(2, 'John Walker', 'QA', 3);
+INSERT INTO workers VALUES(3, 'Angie Star', 'QA Lead', 4);
+INSERT INTO workers VALUES(4, 'Amy Sky', 'CEO', 5);
+
+SELECT * FROM workers;
+
+-- Find the name of the manager of each worker
+SELECT t1.name AS "Employee name", t2.name AS "Manager name"
+FROM workers t1 INNER JOIN workers t2
+ON t1. manager_id = t2.id;
+
+
+------------------------------------------------------------------
+-- HOW TO UPDATE THE TABLE
+-- ALTER TABLE:
+--          It is used to add, update, delete fields/columns of an existing table
+--          It is used to add/delete Constraints, Data type, and the size (no. of character limit) of the existing fields/columns
+
+-- Add a column to an existing table
+ALTER TABLE my_companies
+ADD COLUMN state CHAR(2);
+
+SELECT * FROM my_companies;
+
+-- Add a column/field to an existing table with DEFAULT value
+
+ALTER TABLE workers
+ADD worker_address VARCHAR (50) DEFAULT 'Miami, FL, US';
+
+-- Add multiple columns/fields to an existing table with DEFAULT value
+ALTER TABLE workers
+ADD COLUMN number_of_workers SMALLINT DEFAULT 0,
+ADD name_of_ceo TEXT;
+
+-- How to delete an existing column/field from a table
+ALTER TABLE workers
+DROP COLUMN name_of_ceo;
+
+-----------------------------------------------------------------------------
+-- How to rename an existing column/field from a table
+ALTER TABLE workers
+RENAME worker_address TO employee_address;
+
+
+-- How to rename the table itself
+ALTER TABLE workers
+RENAME TO employees2;
+
+
+-----------------------------------------------------------------------------
+
+-- How to modify (add/change CONSTRAINT, DATA TYPE, SIZE) the column/field
+-- This modification CAN be tricky. Be careful about the existing data/value (if there is any)
+-- in the field and modify the field accordingly.
+
+
+
+ALTER TABLE employees2
+ADD COLUMN worker_salary NUMERIC;
+
+ALTER TABLE employees2
+ADD COLUMN worker_salary NUMERIC CONSTRAINT NOT NULL;
+
+
+-- ADD 'NOT NULL' CONSTRAINT to number_of_workers column
+ALTER TABLE employees2
+ALTER COLUMN number_of_workers SET NOT NULL; -- => This will not show error because zero is a value that exists in this field
+                                             -- NO cell is empty(null). So NOT NULL can be applied to this field
+
+
+INSERT INTO employees2 (name) VALUES ('John Doe'); -- New record with John Doe name will be added to the table
+                                                   -- and number_of_workers field will not be null
+
+
+-- Add UNIQUE key to id FIELD
+ALTER TABLE employees2
+ADD CONSTRAINT id_unique UNIQUE (id); -- UNIQUE Key can accept null values
+
+UPDATE employees2
+SET id = 4
+WHERE name = 'John Doe';
+-- This will show error because id 4 already exists and we just added UNIQUE CONSTRAINT to this field
+
+INSERT INTO employees2(id, name,title) VALUES ('5', 'Veli Han', 'DEV');
+
+
+-- TRICK QUESTION:
+-- Can we add UNIQUE key to employee_address field?
+-- Can we add DEFUALT value to id field?
+
+--------------------------------------------------------------------------
+-- DATA TYPE / SIZE
+-- Change the data type of employee_address to CHAR(5)
+ALTER TABLE employees2
+ALTER COLUMN employee_address TYPE CHAR(5);
+
+-- The existing data has more than 5 characters so it will show error
+
+ALTER TABLE employees2
+ALTER COLUMN employee_address TYPE VARCHAR(60);
+
+INSERT INTO employees2(name, employee_address) VALUES('M Omar', 'New York, NY, US');
+
+-- When we modify a field, the size (for characters) should be greater than the existing maximum value
+
+SELECT * FROM employees2;
+
+
+-- Difference between ALTER and UPDATE keywords:
+--      Update is used to change values/data inside the cells of the field; whereas ALTER is used
+--      to apply changes at the structure level of the existing table
+
+
+SELECT * FROM employees2;
+
+SELECT * FROM workers;
+
+-----------------------------------------------------------------------------------
+-- PRACTICE
+https://sqlbolt.com/lesson/altering_tables
+EX.17
+1.
+ALTER TABLE movies
+ADD COLUMN Aspect_ratio FLOAT;  -- TYPE is used if we need to change data type
+
+2.
+ALTER TABLE movies
+ADD COLUMN Language TEXT DEFAULT 'English';
+
+
+Go to lesson 9
+https://sqlbolt.com/lesson/select_queries_with_expressions
+1.
+SELECT title, (domestic_sales + international_sales)/1000000
+AS total_sales
+FROM movies INNER JOIN boxoffice
+ON movies.id = boxoffice.movie_id;
+
+2.
+SELECT title, rating * 10 AS rating_percent
+FROM movies INNER JOIN boxoffice
+ON movies.id = boxoffice.movie_id;
+
+3.
+SELECT title, year
+FROM movies
+WHERE year % 2 = 0;
+
+
+-----------------------------------------------------------------------------------------------------------
+
+Go to PDF file for SQL - pg 17
+This PDF is originally prepared for Oracle database
+
+Which component you used mostly in your project? (interview question)
+
+QAs => mostly DML, DQL
+
+In database, we have many tables, lets say, one table per user,... we need to think before creating a new table for new user
+do we need it ... if we keep creating new table, database memory will run our (even AWS provided)
+While creating new user, make sure all values are added correctly instead of modifying frequently
+DEv should test/check first, then QA
+

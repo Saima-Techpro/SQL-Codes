@@ -1,0 +1,273 @@
+--EXISTS Condition-->   is used with Subquery
+--Query --> search operation to read the data --> SELECT is used to make queries
+--Subquery --> if we use multiple SELECT keyword or if we use SELECT keyword in other lines of syntax it means it is a subquery
+--             If the Subquery returns any record, the Outer Query will be executed (like If Statement, condition is true, code will be executed)
+--             If the Subquery doesn't return any record, the Outer Query will not be executed
+--             It can be used in SELECT, INSERT, UPDATE and DELETE commands
+
+
+CREATE TABLE customers_likes(
+  product_id CHAR(10),
+  customer_name VARCHAR(50),
+  liked_product VARCHAR(50)
+)
+
+
+INSERT INTO customers_likes VALUES (10, 'Mark', 'Orange');
+INSERT INTO customers_likes VALUES (50, 'Mark', 'Pineapple');
+INSERT INTO customers_likes VALUES (60, 'John', 'Avocado');
+INSERT INTO customers_likes VALUES (30, 'Lary', 'Cherries');
+INSERT INTO customers_likes VALUES (20, 'Mark', 'Apple');
+INSERT INTO customers_likes VALUES (10, 'Adem', 'Orange');
+INSERT INTO customers_likes VALUES (40, 'John', 'Apricot');
+INSERT INTO customers_likes VALUES (20, 'Eddie', 'Apple');
+
+SELECT * FROM customers_likes;
+
+
+-- Update all customer_name field to "No Name" if the customer_name field has "Lary" among the customer_name field.
+UPDATE customers_likes
+SET customer_name='No Name'
+--WHERE EXISTS(SELECT customer_name FROM customers_likes WHERE customer_name='Hary'); => Invalid name => returns false => outer query doesn't execute
+WHERE EXISTS(SELECT customer_name FROM customers_likes WHERE customer_name='Lary');
+
+--Update names to "No Name" if there's any liked_product whose name is 'Orange', or 'Pineapple' or 'Avocado' in customers_likes table
+UPDATE customers_likes
+SET customer_name= 'No Name'
+WHERE liked_product IN('Orange', 'Pineapple', 'Avocado');
+
+--Update all names to "No Name" if there's any liked_product whose name is 'Orange', or 'Pineapple' or 'Avocado' in customers_likes table
+UPDATE customers_likes
+SET customer_name= 'No Name'
+WHERE EXISTS (SELECT customer_name FROM customers_likes WHERE liked_product IN('Orange', 'Pineapple', 'Avocado'));
+
+-- What's the difference?
+-- If you want to update specific records, DO NOT use EXISTS condition, coz it applies to all records if the condition returns true.. it's common for all records
+-- To update specific records, use simple IN condition   => create table again to run the following code to show the difference
+
+
+--Delete records if there is 'Orange' as product name in customers_likes table
+DELETE FROM customers_likes
+WHERE EXISTS (SELECT liked_product FROM customers_likes WHERE liked_product='Orange');
+-- This will delete all records coz if subquery returns true, EXISTS condition will DELETE all records
+
+-------------------------------------------------------------------------------
+SELECT * FROM employees;
+SELECT * FROM companies;
+
+check if above 2 tables exist or not
+
+--LIKE CONDITION-->It is used with WILDCARDS
+--WILDCARDS --> useful expressions to do search operations
+--1) % Wildcard:It represents zero or more characters
+
+--Select employee names which start with 'E'
+SELECT name
+FROM employees
+WHERE name LIKE 'E%';
+
+
+--Select employee names which ends with 'e'
+SELECT name
+FROM employees
+WHERE name LIKE '%e';
+
+
+--Select employee names which starts with 'B' and ends with 't'
+SELECT name
+FROM employees
+WHERE name LIKE 'B%t';
+
+--Select employee names which has 'a' in any position
+
+SELECT name
+FROM employees
+WHERE name LIKE '%a%';
+
+--Select employee names which has 'e' and 'r' in any position
+SELECT name
+FROM employees
+WHERE name LIKE '%e%r%' OR name LIKE '%r%e%';
+
+--2)Underscore WildCard: '_' represents a single character
+
+--Select state whose second character is 'e' and fourth is 'n'
+SELECT state
+FROM employees
+WHERE state LIKE '_e_n%';
+
+--Select state whose second last character is 'i'
+SELECT state
+FROM employees
+WHERE state LIKE '%i_';
+
+--Select 'states' whose second character is 'e' and it has at least 6 characters
+SELECT state
+FROM employees
+WHERE state LIKE '_e____%';
+
+
+--Select state which has 'i' in any position after second character
+
+SELECT state
+FROM employees
+WHERE state LIKE '__%i%';
+
+-----------------------------------------------------------------------------------------
+CREATE TABLE words(
+  word_id CHAR(10) UNIQUE,
+  word VARCHAR(50) NOT NULL,
+  number_of_letters SMALLINT
+)
+
+INSERT INTO words VALUES (1001, 'hot', 3);
+INSERT INTO words VALUES (1002, 'hat', 3);
+INSERT INTO words VALUES (1003, 'hit', 3);
+INSERT INTO words VALUES (1004, 'hbt', 3);
+INSERT INTO words VALUES (1008, 'hct', 3);
+INSERT INTO words VALUES (1005, 'adem', 4);
+INSERT INTO words VALUES (1006, 'selena', 6);
+INSERT INTO words VALUES (1007, 'yusuf', 5);
+
+SELECT * FROM words;
+-----------------------------------------------------------------------------------------
+--NOT  LIKE Condition
+--Select words which do not have 'h' in any position
+SELECT word
+FROM words
+WHERE word NOT LIKE '%h%';
+
+
+--Select words which do not end with 't' and do not end with 'f'
+SELECT word
+FROM words
+WHERE word NOT LIKE '%t' AND word NOT LIKE '%f';
+
+--Select words which start with any character, not followed by 'a', not followed by 'e'
+SELECT word
+FROM words
+WHERE word NOT LIKE '_a%' AND word NOT LIKE '_e%';
+
+-----------------------------------------------------------------------------------------
+--REGEXP_LIKE Condition: You can use regular expressions with REGEXP_LIKE Condition (to tell SQL what is acceptable or not)
+--Select words whose first character is 'h', last character is 't' and second character is 'o', or 'a', or 'i'
+-- Like condition has to match the entire data whereas by using Regular Expression REGEXP we can match anywhere within the data
+-- LIKE operator succeeds only if its pattern matches the entire string;  REGEXP_LIKE succeeds where the pattern can match any part of the string.
+--1.way:
+SELECT word
+FROM words
+WHERE word LIKE 'ho%t' OR word LIKE 'ha%t' OR word LIKE 'hi%t';
+
+--2.way: By using REGEXP_LIKE Condition
+SELECT word
+FROM words
+WHERE REGEXP_LIKE(word, 'h[oai](.*)t');  => In (.*), dot means one character, * means multiple characters.. they're used together
+
+--OR use ~
+SELECT word
+FROM words
+WHERE word ~ 'h[oai](.*)t';  => in Math, this sign ~ is used for appropriate or round numbers
+
+
+--Select words whose first character is 'h', last character is 't' and second character is from 'a' to  'e'
+SELECT word
+FROM words
+WHERE word  ~ 'h[a-e](.*)t';  => in Math, this sign ~ is used for appropriate or round numbers
+
+--Select words whose first character is 's' or 'a' or 'y'
+SELECT word
+FROM words
+WHERE word ~ '^[say](.*)';    -- '^' means first character if you use it before brackets
+
+--Select words whose last character is 'm' or 'a' or 'f'
+SELECT word
+FROM words
+WHERE word ~ '(.*)[maf]$'; --$ means last character when you use it after the brackets
+
+--Select words which have 'a' in any position
+--1.way
+SELECT word
+FROM words
+WHERE word ~ 'a';
+--2.way
+SELECT word
+FROM words
+WHERE word ~ '(.*)a(.*)';   --> means the same as '%a%'
+
+--Select words which have characters from 'd' to 't' at the beginning followed by any character and then 'l'
+SELECT word
+FROM words
+WHERE word ~ '^[d-t].l';   --> '.' means one character like '_' wildcard... in regexp we use dot instead of _
+
+--Select words which have characters from 'm' to 'z' at the beginning followed by any two characters and then 'u'
+SELECT word
+FROM words
+WHERE word ~ '^[m-z]..u';
+
+SELECT * FROM words;
+
+--Select employee names which starts with 'E' and ends with 'y'
+-- 1st way:
+SELECT name
+FROM employees
+WHERE name ~ '^[E]..........y';
+-- So we need to think of making above code more dynamic
+
+--2nd way:
+SELECT name
+FROM employees
+WHERE name ~ '^[E](.*)[y]$';
+
+--Select employee names which do not start with 'E' and do not end with 'y'
+-- 1st way:
+SELECT name
+FROM employees
+WHERE name NOT LIKE 'E%y';
+
+-- 2nd way:
+SELECT name
+FROM employees
+WHERE name ~ '^[^E](.*)[^y]$';
+
+--HW
+--Select states whose third character is 'o' or 'x'
+--Select states whose third character from the end is not "n" or "x"
+
+--Select states whose third character is 'o' or 'x'
+--1.way
+SELECT state
+FROM workers
+WHERE state LIKE '__o%' OR state LIKE '__x%';
+
+--2.way:
+SELECT DISTINCT state
+FROM workers
+WHERE state ~ '..[ox]';
+
+--Select states whose third character from the end is not 'n' or 'x'
+SELECT DISTINCT state
+FROM workers
+WHERE state ~ '[^nx]..$';
+--------------------------------------------------------------------------------------
+
+CREATE TABLE workers
+(
+  id CHAR(9),
+  name VARCHAR(50),
+  state VARCHAR(50),
+  salary SMALLINT,
+  company VARCHAR(20)
+);
+
+INSERT INTO workers VALUES(123456789, 'John Walker', 'Florida', 2500, 'IBM');
+INSERT INTO workers VALUES(234567890, 'Brad Pitt', 'Florida', 1500, 'APPLE');
+INSERT INTO workers VALUES(345678901, 'Eddie Murphy', 'Texas', 3000, 'IBM');
+INSERT INTO workers VALUES(456789012, 'Eddie Murphy', 'Virginia', 1000, 'GOOGLE');
+INSERT INTO workers VALUES(567890123, 'Eddie Murphy', 'Texas', 7000, 'MICROSOFT');
+INSERT INTO workers VALUES(456789012, 'Brad Pitt', 'Texas', 1500, 'GOOGLE');
+INSERT INTO workers VALUES(123456710, 'Mark Stone', 'Pennsylvania', 2500, 'IBM');
+
+
+SELECT * FROM workers;
+
+-----------------------------------------------------------------------------------

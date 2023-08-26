@@ -1,0 +1,82 @@
+CREATE TABLE students
+(
+	id CHAR(4),
+	name VARCHAR(20),
+	age int
+)
+
+SELECT * FROM students
+
+INSERT INTO students VALUES(1000, 'John Doe', 10);
+INSERT INTO students VALUES(1001, 'Harry Foe', 11);
+INSERT INTO students VALUES(1002, 'John Doe');
+
+INSERT INTO students(name, age) VALUES('John Doe', 10);
+
+CREATE TABLE staff(
+id CHAR(5) PRIMARY KEY,
+name VARCHAR(50) UNIQUE,
+salary CHAR(5) NOT NULL,
+start_date DATE DEFAULT CURRENT_DATE
+)
+
+INSERT INTO staff VALUES(10001, 'Mary Doe', 5000);
+INSERT INTO staff VALUES(10002, 'Harry Doe', 4000);
+INSERT INTO staff VALUES(10003, 'Terry Doe', 4500, '2023-07-01');
+INSERT INTO staff(name, salary) VALUES('Terry Doe', 4500);
+
+SELECT * FROM staff;
+
+CREATE TABLE employees(
+id CHAR(5),--primary key
+name VARCHAR(50) UNIQUE,
+salary int NOT NULL,
+CONSTRAINT id_primary PRIMARY KEY(id)
+)
+
+INSERT INTO employees VALUES('10001', 'John Doe',7000);
+INSERT INTO employees VALUES( '10002', 'Mery Star' ,12000);
+INSERT INTO employees VALUES('10003', 'Holly', 5000);
+
+SELECT * FROM employees;
+
+create table addresses(
+address_id char(5),
+street varchar(30),
+city varchar(15),
+CONSTRAINT id_foreign FOREIGN KEY(address_id) REFERENCES employees(id)
+
+)
+
+INSERT INTO addresses VALUES(10001, 'Flower', 'New York');
+INSERT INTO addresses VALUES(10001, 'Honey', 'LA');
+INSERT INTO addresses VALUES(10001);
+
+DROP TABLE employees;--without droping child table, you can not drop parent table
+DROP TABLE addresses;
+
+SELECT * FROM addresses
+
+create table my_students(
+id char(4),
+name varchar(20),
+not_avg numeric(5,2),
+record_date date,
+CONSTRAINT my_students_primary PRIMARY KEY (id,name)
+)
+
+SELECT * FROM my_students;
+
+INSERT INTO my_students VALUES(1000, 'John', 90.90, '2023-08-20');
+INSERT INTO my_students VALUES(1000, 'Mary', 90.90, '2023-08-20');
+INSERT INTO my_students VALUES(1001, 'Mary', 90.90, '2023-08-20');
+Collapse
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,237 @@
+-----------------------------------------------------------------------------------------------------------
+-- Aggregate Functions in SQL (MAX, MIN, AVG, SUM, COUNT)
+-- What if we have to create our own functions ..
+
+-- How to create functions in SQL?
+
+-- A function is created to do some tasks faster and easier  (e.g. calculate expenses for each week and then sum up all)
+-- A function can be created for CRUD operations
+-- In SQL, every function returns data with a return type (like when we declare return type for methods in JAVA)
+-- Operations that do not return any data (like void in Java), we call it "Procedure"
+-- Mostly used by developers (Advanced SQL)
+
+CREATE FUNCTION addF(x NUMERIC, y NUMERIC)    -- addF => addFunction
+RETURNS NUMERIC
+LANGUAGE plpgsql      --> procedural postgre sql, $$ represents {} method body
+$$
+BEGIN
+
+RETURN x+y;
+
+END
+$$
+
+-- 90% syntax of SQL is same in all databases like Oracle, MySQL, Postgre
+
+
+-- How to call this function?
+
+SELECT addF(3,4) AS Addition;    OR
+SELECT * FROM addF(3,4) AS Addition;  -- both syntax work
+
+-- If you run it second time, we'll get error
+-- To avoid that, add OR REPLACE in the first line like below
+
+CREATE OR REPLACE FUNCTION addF(x NUMERIC, y NUMERIC)    -- addF => addFunction
+RETURNS NUMERIC
+LANGUAGE plpgsql
+$$
+BEGIN
+
+RETURN x+y;
+
+END
+$$
+
+-- Write a function that calculates the volume of the cone  (formula: π*r*r*h/3)
+
+CREATE OR REPLACE FUNCTION volumeOfCone(r NUMERIC, h NUMERIC)    -- addF => addFunction
+RETURNS NUMERIC
+LANGUAGE plpgsql
+$$
+BEGIN
+
+RETURN 3.14*r*r*h/3;
+
+END
+$$
+
+SELECT volumeOfCone(3,5) AS Volume_Of_Cone;
+
+SELECT to_char('00.0');   -- to limit the decimal part we use to_char() function
+
+SELECT to_char(volumeOfCone(3,5), '00.0');   => returns 47.1
+
+
+--------------------------------------------------------------------------------------------
+
+PRACTICE:
+
+https://sqlbolt.com/lesson/select_queries_with_joins
+
+Lesson 6: INNER JOIN
+1.
+
+SELECT title, domestic_sales, international_sales
+FROM movies INNER JOIN boxoffice
+ON movies.id = boxoffice.movie_id;
+
+
+2.
+SELECT title, domestic_sales, international_sales
+FROM movies INNER JOIN boxoffice
+ON movies.id = boxoffice.movie_id
+WHERE international_sales > domestic_sales;
+
+3.
+SELECT title, rating
+FROM movies INNER JOIN boxoffice
+ON movies.id = boxoffice.movie_id
+ORDER BY rating DESC;
+
+---------------------------------------------------------------------------------------------
+Lesson 7: OUTER JOINS
+NOTES:
+(COMBINATION OPERATORS IN SQL: UNION, UNION ALL, INTERSECT, EXCEPT )
+(COMPARISON OPERATORS IN SQL: euqals =, greater than >, lesser than <, =<, => etc.)
+
+OPERATORS => used to combine the result of 2 queries
+JOINS   => used to combine the data of 2 tables
+
+1.
+1 way:
+SELECT DISTINCT building FROM employees;
+
+2nd way:
+SELECT DISTINCT building
+FROM employees
+WHERE role NOT NULL;  -- to make sure that buildings are all occupied .. no empty building
+
+3rd way:
+SELECT DISTINCT building_name
+FROM employees e INNER JOIN buildings b
+ON b.building_name = e.building;
+
+
+2.
+1 way:
+SELECT * FROM buildings;
+
+2nd way: => But this will return only the  buildings which are common between the 2 tables... not all so 1st way is better solution
+SELECT b.building_name, b.capacity
+FROM employees e INNER JOIN buildings b
+ON b.building_name = e.building;
+
+
+3.
+1st way:       => This will show all buildings but not all roles
+SELECT b.building_name, e.role
+FROM buildings b LEFT JOIN employees e
+ON b.building_name = e.building
+GROUP BY building_name;
+
+2nd way:       => This will show all roles but not all buildings
+SELECT b.building_name, e.role
+FROM buildings b LEFT JOIN employees e
+ON b.building_name = e.building
+GROUP BY role;
+
+3rd way:  => This works fine
+SELECT DISTINCT building_name, role
+FROM buildings b LEFT JOIN employees e
+ON b.building_name = e.building;
+
+---------------------------------------------------------------------------------------------
+
+Lesson 10:
+
+https://sqlbolt.com/lesson/select_queries_with_aggregates
+
+Exercise 10
+1.
+SELECT name, MAX(years_employed) as Maximum_years
+FROM employees;
+
+2.
+SELECT role, AVG(years_employed) as Average_years
+FROM employees
+GROUP BY role;
+
+3.
+SELECT building, SUM(years_employed)
+FROM employees
+GROUP BY building;
+
+---------------------------------------------------------------------------------------------
+
+Lesson 11:
+Exercise 11:
+1.
+SELECT role, COUNT(role) AS Number_of_artists
+FROM employees
+WHERE role = 'Artist';
+
+2.
+SELECT role, COUNT(role) AS Number_of_employees
+FROM employees
+GROUP BY role;
+
+3.
+SELECT role, SUM(years_employed)
+FROM employees
+GROUP BY role
+HAVING role = 'Engineer';
+OR
+SELECT role, SUM(years_employed)
+FROM employees
+WHERE role = 'Engineer'
+GROUP BY role;
+
+---------------------------------------------------------------------------------------------
+
+Exercise 12:
+
+Limit/Offset => an example of people visiting our website.. PM asks you to find who has visited the website most ...
+find top 5, or find next 5 after the first 5 => Max(), limit 5 will return first five, offset 5 and limit 5 will return next 5
+
+1.
+SELECT director, COUNT(director) AS directed_movies
+FROM movies
+GROUP BY director;
+
+OR
+SELECT director, COUNT(id)
+FROM movies
+GROUP BY director;
+
+OR
+SELECT director, COUNT(title)
+FROM movies
+GROUP BY director;
+
+-- COZ TITLE, ID AND DIRECTOR ALL FIELDS ARE UNIQUE
+
+2.
+SELECT director, (domestic_sales + international_sales) AS Total_sales
+FROM movies INNER JOIN boxoffice
+ON movies.id = boxoffice.movie_id
+GROUP BY director;
+
+OR with alias
+
+SELECT m.director, b.SUM(domestic_sales + international_sales) AS Total_sales
+FROM movies m INNER JOIN boxoffice b
+ON m.id = b.movie_id
+GROUP BY director;
+
+
+
+
+
+
+
+
+
+
+
+

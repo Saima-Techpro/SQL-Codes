@@ -1,0 +1,269 @@
+--Create workers table whose fields are worker_id, worker_name, worker_salary.
+--worker_id will have primary key with the name worker_id_pk
+--Insert 4 records into the workers table
+--See the table on the console
+
+CREATE TABLE workers(
+  worker_id SMALLINT,       => uses 2 bytes of memory; CHAR(4) uses 4 bytes of memory
+  worker_name VARCHAR(50),  => flexibility makes it slower, declaring capacity makes the operation faster
+  worker_salary NUMERIC,
+
+  CONSTRAINT worker_id_pk PRIMARY KEY(worker_id)  => another way of declaring CONSTRAINTS
+
+)
+
+INSERT INTO workers VALUES(101, 'Ali Can', 10000);
+INSERT INTO workers VALUES(102, 'Veli Han', 2000);
+INSERT INTO workers VALUES(103, 'Aisha Can', 7000);
+INSERT INTO workers VALUES(104, 'Angie Ocean', 12000);
+
+SELECT * FROM workers;
+
+// Show the students how to create / see table from the left side menu under schema
+
+--Increase the salary of Veli Han to 20 percent less than the highest salary (means increase Veli's salary upto 80% of the highest)
+
+UPDATE workers
+SET worker_salary=(SELECT MAX(worker_salary)* 0.8 FROM workers)
+WHERE worker_id = 102; OR
+WHERE worker_name='Veli Han';
+
+--Decrease the salary of Ali Can to 30 percent more than the lowest salary
+-- 30% increase means 100 -> 130  100*1.3=130
+UPDATE workers
+SET worker_salary= (SELECT MIN(worker_salary)*1.3 FROM workers)
+WHERE worker_id = 101; OR
+WHERE worker_name='Ali Can';
+
+--Increase the salaries by 1000 if the salaries are less than the average salary
+-- if means you have to filter the information using WHERE keyword
+
+UPDATE workers
+SET worker_salary= worker_salary+1000
+WHERE worker_salary<(SELECT AVG(worker_salary) FROM workers);
+
+SELECT * FROM workers;
+
+--Make the salaries equal to the average salary if the salaries are less than the average salary
+UPDATE workers
+SET worker_salary=(SELECT AVG(worker_salary) FROM workers)
+WHERE worker_salary<(SELECT AVG(worker_salary) FROM workers);
+
+--Conditions, Statements, Expressions in SQL
+
+--IS NULL Condition
+CREATE TABLE people
+(
+ssn INT,
+name VARCHAR(50),
+address VARCHAR(80)
+)
+
+INSERT INTO people VALUES(123456789, 'Mark Star', 'Florida');
+INSERT INTO people VALUES(234567890, 'Angie Way', 'Virginia');
+INSERT INTO people VALUES(345678901, 'Mary Tien', 'New Jersey');
+INSERT INTO people(ssn, address) VALUES(456789012, 'Michigan');
+INSERT INTO people(ssn, address) VALUES(567890123, 'California');
+INSERT INTO people(ssn, name) VALUES(567890123, 'California');
+
+SELECT * FROM people;
+
+--Change null names with the statement "Name will be inserted later"
+UPDATE people
+SET name='Name will be inserted later'
+WHERE name IS NULL;   -- Don't use '= NULL'
+
+--Change null addresses to "Address will be inserted later"
+UPDATE people
+SET address='Address will be inserted later'
+WHERE address IS NULL;
+
+--How to Delete record from a table
+DELETE FROM people
+WHERE ssn= 234567890;
+
+--Delete records which do not have name
+DELETE FROM people
+WHERE name IS NULL; OR
+WHERE name = 'Name will be inserted later';
+
+--Delete all records
+DELETE FROM people;
+--Delete command deletes just the records, it does not destroy the table from db.
+
+// Run the INSERT VALUES commands again coz all records are deleted at the moment
+
+--Delete all records whose name is null or address is null
+DELETE FROM people
+WHERE name IS NULL OR address IS NULL;  -- Don't use '= NULL'
+
+--Delete all records whose SSN is greater than 123456789 and less than 345678901
+DELETE FROM people
+WHERE ssn>123456789 AND ssn<345678901;
+
+--Delete all records whose name is not null
+DELETE FROM people
+WHERE name IS NOT NULL;
+
+--TRUNCATE Command removes all records leaving the header (the row with the column names)
+
+--What is the difference between DELETE and TRUNCATE and DROP query?
+-- In DELETE FROM, you can use WHERE clause to filter data (deletes one or more existing records), but in TRUNCATE, you can't use WHERE clause.
+-- If you delete data from the table using DELETE FROM, the records can be rolled back; but if you remove records
+-- using TRUNCATE, the records can NOT be rolled back.
+
+--The DROP Command drops the complete table from the database.
+
+TRUNCATE TABLE people;
+
+-- How to remove table completely from schema/database
+DROP TABLE workers;
+
+
+CREATE TABLE workers(
+  worker_id SMALLINT,
+  worker_name VARCHAR(50),
+  worker_salary NUMERIC,
+
+  CONSTRAINT worker_id_pk PRIMARY KEY(worker_id)
+
+)
+
+INSERT INTO workers VALUES(101, 'Ali Can', 1200);
+INSERT INTO workers VALUES(102, 'Veli Han', 2000);
+INSERT INTO workers VALUES(103, 'Aisha Can', 7000);
+INSERT INTO workers VALUES(104, 'Angie Ocean', 12000);
+
+SELECT * FROM workers; --DQL -->DATA QUERY LANGUAGE-->for reading data we use "SELECT"
+
+DROP TABLE workers;
+
+--How to get specific field from a table
+SELECT worker_name FROM workers;
+
+--How to get specific multiple fields from a table
+SELECT worker_name, worker_id FROM workers;
+
+--How to get a specific record
+SELECT *
+FROM workers
+WHERE worker_id=101;
+
+--How to get a multiple specific record
+SELECT *
+FROM workers
+WHERE worker_id < 103;
+
+
+--Get the records whose salary is 2000 or 7000 or 12000
+--1.way:
+SELECT *
+FROM workers
+WHERE worker_salary=2000 OR worker_salary=7000 OR worker_salary=12000;
+
+--2.way:
+SELECT *
+FROM workers
+WHERE worker_salary IN(2000, 7000, 12000);     --IN() is used instead of repeated 'OR'
+
+-- How to specific cell from the table
+SELECT worker_name
+FROM workers
+WHERE worker_id = 102;
+
+-- Interview Question: How to select record whose salary is the highest
+SELECT *
+FROM workers
+WHERE worker_salary = (SELECT MAX(worker_salary) FROM workers);
+
+-- Interview Question: How to select record whose salary is the lowest
+SELECT *
+FROM workers
+WHERE worker_salary = (SELECT MIN(worker_salary) FROM workers);
+
+
+-- Interview Question: How to select record whose salary is the lowest and the highest
+--1st way:
+SELECT *
+FROM workers
+WHERE worker_salary = (SELECT MAX(worker_salary) FROM workers) OR worker_salary = (SELECT MIN(worker_salary) FROM workers);
+
+--2nd way:
+SELECT *
+FROM workers
+WHERE worker_salary IN ((SELECT MAX(worker_salary) FROM workers) , (SELECT MIN(worker_salary) FROM workers));
+
+
+
+--Select maximum salary
+--By using 'AS'  (alias) you can put temporary field names for your table on the console
+SELECT MAX(worker_salary) AS maximum_salary FROM workers;
+
+--Select minimum salary by using AS
+SELECT MIN(worker_salary) AS Minimum_Salary FROM workers;
+
+--Select average salary value by using "AS"
+SELECT AVG(worker_salary) AS average_salary FROM workers;
+
+--Count the number of workers
+SELECT COUNT(worker_id) AS number_of_workers
+FROM workers;
+
+--Find the sum of worker_salaries
+SELECT SUM(worker_salary) AS total_salary
+FROM workers;
+
+--Aggregate Functions in PostgreSQL: MAX, MIN, SUM, COUNT, AVG
+
+--Interview Question: Select the second highest salary (YOU will the get the job for solving this query :)
+-- we can use sort method .. but we want to apply the methods that we have learnt so far
+SELECT MAX(worker_salary) AS second_maximum
+FROM workers
+WHERE worker_salary<(SELECT MAX(worker_salary)FROM workers);
+
+
+--Interview Question: Select the second lowest salary
+SELECT MIN(worker_salary) AS second_minimum
+FROM workers
+WHERE worker_salary>(SELECT MIN(worker_salary)FROM workers);
+
+SELECT MAX(worker_salary)
+FROM workers
+WHERE worker_salary NOT IN (SELECT MAX(worker_salary) FROM workers);
+-------------------------------------------------------------------
+
+CREATE TABLE employees
+(
+  id CHAR(9),
+  name VARCHAR(50),
+  state VARCHAR(50),
+  salary SMALLINT,
+  company VARCHAR(20)
+);
+
+INSERT INTO employees VALUES(123456789, 'John Walker', 'Florida', 2500, 'IBM');
+INSERT INTO employees VALUES(234567890, 'Brad Pitt', 'Florida', 1500, 'APPLE');
+INSERT INTO employees VALUES(345678901, 'Eddie Murphy', 'Texas', 3000, 'IBM');
+INSERT INTO employees VALUES(456789012, 'Eddie Murphy', 'Virginia', 1000, 'GOOGLE');
+INSERT INTO employees VALUES(567890123, 'Eddie Murphy', 'Texas', 7000, 'MICROSOFT');
+INSERT INTO employees VALUES(456789012, 'Brad Pitt', 'Texas', 1500, 'GOOGLE');
+INSERT INTO employees VALUES(123456710, 'Mark Stone', 'Pennsylvania', 2500, 'IBM');
+
+SELECT * FROM employees;
+
+CREATE TABLE companies
+(
+  company_id CHAR(9),
+  company VARCHAR(20),
+  number_of_employees SMALLINT
+);
+
+INSERT INTO companies VALUES(100, 'IBM', 12000);
+INSERT INTO companies VALUES(101, 'GOOGLE', 18000);
+INSERT INTO companies VALUES(102, 'MICROSOFT', 10000);
+INSERT INTO companies VALUES(103, 'APPLE', 21000);
+
+SELECT * FROM companies;
+
+--Find the employee and company names whose company has more than 15000 employees
+

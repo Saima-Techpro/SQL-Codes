@@ -1,0 +1,233 @@
+CREATE TABLE workers(
+  worker_id SMALLINT,
+  worker_name VARCHAR(50),
+  worker_salary NUMERIC,
+
+  CONSTRAINT worker_id_pk PRIMARY KEY(worker_id)
+
+)
+
+INSERT INTO workers VALUES(101, 'Ali Can', 1200);
+INSERT INTO workers VALUES(102, 'Veli Han', 2000);
+INSERT INTO workers VALUES(103, 'Aisha Can', 7000);
+INSERT INTO workers VALUES(104, 'Angie Ocean', 8500);
+
+SELECT * FROM workers;
+
+--Interview Question: Select the second highest salary
+SELECT MAX(worker_salary) AS second_maximum
+FROM workers
+WHERE worker_salary<(SELECT MAX(worker_salary)FROM workers);
+
+--Interview Question: Select the second lowest salary
+SELECT MIN(worker_salary) AS second_minimum
+FROM workers
+WHERE worker_salary>(SELECT MIN(worker_salary)FROM workers);
+
+-------------------------------------------------------------------------------------
+--Query --> search operation to read the data --> SELECT is used to make queries
+--Subquery --> if we use multiple SELECT keyword or if we use SELECT keyword in other lines of syntax it means it is a subquery
+--             If the Subquery returns any record, the Outer Query will be executed (like If Statement, condition is true, code will be executed)
+--             If the Subquery doesn't return any record, the Outer Query will not be executed
+--             It can be used in SELECT, INSERT, UPDATE and DELETE commands
+
+ ------------------------------------------------------------------------------------
+--Interview Question: Select third highest salary from the table
+
+SELECT MAX(worker_salary) AS third_highest_salary
+FROM workers
+WHERE worker_salary <  (SELECT MAX(worker_salary)
+                       FROM workers
+                       WHERE worker_salary<(SELECT MAX(worker_salary)FROM workers));
+
+
+--Interview Question: Select third lowest salary from the table
+SELECT MIN(worker_salary) AS third_lowest_salary
+FROM workers
+WHERE worker_salary >  (SELECT MIN(worker_salary)
+                       FROM workers
+                       WHERE worker_salary<(SELECT MIN(worker_salary)FROM workers));
+-------------------------------------------------------------------------------
+
+-- Interview Question: Select all data of the worker whose  salary is the second highest
+-- 1st way:  (works with SQLs-- GLOBAL LANGUAGE)
+SELECT *
+FROM workers
+WHERE worker_salary = (SELECT MAX(worker_salary)
+                       FROM workers
+                       WHERE worker_salary<(SELECT MAX(worker_salary)FROM workers))
+
+-- 2nd way: (works with MySQL, Oracle, Postgre)
+-- ORDER BY --> default: natural order or ascending order
+SELECT *
+FROM workers
+ORDER BY worker_salary DESC
+OFFSET 1 ROW
+FETCH NEXT 1 ROW ONLY;
+
+-- Interview Question: Select all data of the worker whose  salary is the second lowest
+-- 1st way:
+SELECT *
+FROM workers
+WHERE worker_salary = (SELECT MIN(worker_salary)
+                       FROM workers
+                       WHERE worker_salary>(SELECT MIN(worker_salary)FROM workers))
+
+-- 2nd way:
+-- ORDER BY --> default: natural order or ascending order
+SELECT *
+FROM workers
+ORDER BY worker_salary
+OFFSET 1 ROW
+FETCH NEXT 1 ROW ONLY;
+
+-- CHALLENGE: Select all data of the worker whose  salary is the THIRD HIGHEST from the table
+-- 1st way:  (works with SQLs-- GLOBAL LANGUAGE)
+SELECT *
+FROM workers
+WHERE worker_salary = (SELECT MAX(worker_salary) AS third_highest_salary
+                       FROM workers
+                       WHERE worker_salary <  (SELECT MAX(worker_salary)
+                                              FROM workers
+                                              WHERE worker_salary<(SELECT MAX(worker_salary)FROM workers)));
+
+-- 2nd way: (works with MySQL, Oracle, Postgre)
+-- ORDER BY --> default: natural order or ascending order
+SELECT *
+FROM workers
+ORDER BY worker_salary DESC
+OFFSET 2 ROW
+FETCH NEXT 1 ROW ONLY;
+
+-------------  SUBQUERY ACROSS TABLES
+
+
+CREATE TABLE employees (
+  id CHAR(9),
+  name VARCHAR(50),
+  state VARCHAR(50),
+  salary SMALLINT,
+  company VARCHAR(20)
+)
+
+INSERT INTO employees VALUES(123456789, 'John Walker', 'Florida', 2500, 'IBM');
+INSERT INTO employees VALUES(234567890, 'Brad Pitt', 'Florida', 1500, 'APPLE');
+INSERT INTO employees VALUES(345678901, 'Eddie Murphy', 'Texas', 3000, 'IBM');
+INSERT INTO employees VALUES(456789012, 'Eddie Murphy', 'Virginia', 1000, 'GOOGLE');
+INSERT INTO employees VALUES(567890123, 'Eddie Murphy', 'Texas', 7000, 'MICROSOFT');
+INSERT INTO employees VALUES(456789012, 'Brad Pitt', 'Texas', 1500, 'GOOGLE');
+INSERT INTO employees VALUES(123456710, 'Mark Stone', 'Pennsylvania', 2500, 'IBM');
+
+SELECT * FROM employees;
+
+DROP TABLE employees;
+
+CREATE TABLE companies (
+  company_id CHAR(9),
+  company VARCHAR(20),
+  number_of_employees SMALLINT
+)
+
+INSERT INTO companies VALUES(100, 'IBM', 12000);
+INSERT INTO companies VALUES(101, 'GOOGLE', 18000);
+INSERT INTO companies VALUES(102, 'MICROSOFT', 10000);
+INSERT INTO companies VALUES(103, 'APPLE', 21000);
+
+SELECT * FROM companies;
+
+DROP TABLE companies;
+
+--Find the employee and company names whose company has more than 15000 employees
+SELECT name, company
+FROM employees
+WHERE company IN(SELECT company FROM companies WHERE number_of_employees>15000);
+
+
+--Find the company names and company ids which are in Florida.
+SELECT company, company_id
+FROM companies
+WHERE company IN (SELECT company FROM employees WHERE state='Florida');
+
+--Find employee names and their states whose company id is greater than 100
+SELECT name, state
+FROM employees
+WHERE company IN(SELECT company FROM companies WHERE company_id>'100');
+
+--Find the company name, number of employees and average salary for every company
+
+SELECT company, number_of_employees,
+(SELECT AVG(salary) FROM employees WHERE employees.company=companies.company)
+FROM companies;
+
+--Find the name of the companies, company ids maximum and minimum salaries per company
+
+SELECT company, company_id,(SELECT MAX(salary) FROM employees WHERE employees.company= companies.company) AS max_salary_per_company,
+                           (SELECT MIN(salary) FROM employees WHERE employees.company= companies.company) AS min_salary_per_company
+FROM companies;
+
+SELECT * FROM companies;
+SELECT * FROM employees;
+--------------------------------------------------------------------------------
+CREATE TABLE customers_products (
+  product_id INT,
+  customer_name VARCHAR(50),
+  product_name VARCHAR(50)
+)
+
+INSERT INTO customers_products VALUES (10, 'Mark', 'Orange');
+INSERT INTO customers_products VALUES (10, 'Mark', 'Mango');
+INSERT INTO customers_products VALUES (20, 'John', 'Apple');
+INSERT INTO customers_products VALUES (30, 'Amy', 'Plum');
+INSERT INTO customers_products VALUES (20, 'Mark', 'Apple');
+INSERT INTO customers_products VALUES (10, 'Adem', 'Orange');
+INSERT INTO customers_products VALUES (40, 'John', 'Apricot');
+INSERT INTO customers_products VALUES (20, 'Eddie', 'Apple');
+
+
+SELECT * FROM customers_products;
+
+
+--Find the records that has the product_name value as Orange, Apple or Plum
+--1.way: Not Recommended because of the repetition
+SELECT *
+FROM customers_products
+WHERE product_name='Orange' OR product_name='Apple' OR product_name='Plum';
+
+--2.way: Recommended
+SELECT *
+FROM customers_products
+WHERE product_name IN('Orange','Apple','Plum');
+
+--NOT IN() Condition
+-- != means <> in SQL
+--Find the records whose product_name is not Orange, Apple or Plum
+SELECT *
+FROM customers_products
+WHERE product_name NOT IN('Orange','Apple','Plum');
+
+
+--BETWEEN Condition
+--Find the product_names that have product_id less than or equal to 30 and greater than or equal to 20
+--1.way
+SELECT product_name
+FROM customers_products
+WHERE product_id<= 30 AND product_id>=20;
+
+--2.way: Recommended
+SELECT product_name
+FROM customers_products
+WHERE product_id BETWEEN 20 AND 30;   --20 and 30 are inclusive
+
+
+--NOT BETWEEN Condition
+--Select the records whose product id is less than 20 greater than 25
+-- 1st way:
+SELECT *
+FROM customers_products
+WHERE product_id<20 OR product_id>25;
+
+--2nd way:
+SELECT *
+FROM customers_products
+WHERE product_id NOT BETWEEN 20 AND 25;  --(in NOT BETWEEN, boundary values are exclusive)
+
