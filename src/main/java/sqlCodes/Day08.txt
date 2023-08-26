@@ -13,6 +13,7 @@
 CREATE FUNCTION addF(x NUMERIC, y NUMERIC)    -- addF => addFunction
 RETURNS NUMERIC
 LANGUAGE plpgsql      --> procedural postgre sql, $$ represents {} method body
+AS
 $$
 BEGIN
 
@@ -35,6 +36,7 @@ SELECT * FROM addF(3,4) AS Addition;  -- both syntax work
 CREATE OR REPLACE FUNCTION addF(x NUMERIC, y NUMERIC)    -- addF => addFunction
 RETURNS NUMERIC
 LANGUAGE plpgsql
+AS
 $$
 BEGIN
 
@@ -48,6 +50,7 @@ $$
 CREATE OR REPLACE FUNCTION volumeOfCone(r NUMERIC, h NUMERIC)    -- addF => addFunction
 RETURNS NUMERIC
 LANGUAGE plpgsql
+AS
 $$
 BEGIN
 
