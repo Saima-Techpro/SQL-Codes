@@ -1,0 +1,163 @@
+
+--Practice 02:
+
+--Ex: 01
+CREATE TABLE cities(
+name VARCHAR(20) CHECK (char_length(name) <= 10),--CHECK is the custom constraint
+district VARCHAR(20) CHECK(district LIKE '%i%'),
+population INT CHECK (population > 100000)
+);
+
+INSERT INTO cities VALUES ('Istanbul', 'Kadikoy', 100001 );
+INSERT INTO cities VALUES ('Istanbul', 'Besiktas' );--CHECK constarint accepts null
+INSERT INTO cities VALUES ('Ankara', 'Mamak', 5000000 );--relation "cities" violates check constraint "cities_district_check"
+
+SELECT * FROM cities;
+
+--Ex: 02==> Find the second heighest OrderQty in the table
+CREATE TABLE products (
+    WorkOrderID INT PRIMARY KEY,
+    ProductID INT,
+    OrderQty INT
+);
+
+INSERT INTO products (WorkOrderID, ProductID, OrderQty)
+VALUES
+    (1, 995, 10),
+    (2, 995, 5),
+    (3, 996, 3),
+    (4, 996, 6),
+    (5, 997, 20),
+	(15, 997, 20),
+	(25, 997, 20),
+    (6, 998, 18),
+    (7, 998, 3),
+    (8, 998, 8),
+    (9, 998, 12),
+    (10, 999, 5);
+
+SELECT * FROM products;
+
+--1st way: By using sub query
+SELECT MAX(OrderQty) AS second_heighest FROM products
+WHERE OrderQty < (SELECT MAX(OrderQty) FROM products)
+
+--2nd way: By using LIMIT and OFFSET
+SELECT DISTINCT OrderQty AS second_heighest FROM products ORDER BY OrderQty DESC LIMIT 1 OFFSET 1
+
+--Ex 03:
+
+-- Creating a table named my_employees with columns: employee_id, first_name, last_name, salary
+CREATE TABLE my_employees (
+    employee_id serial PRIMARY KEY, -- Creating an auto-incrementing primary key
+    first_name varchar(50),
+    last_name varchar(50),
+    salary numeric
+);
+
+INSERT INTO my_employees(first_name, last_name, salary) VALUES ('John', 'Doe', 10000);
+INSERT INTO my_employees(first_name, last_name, salary) VALUES ('Mary', 'Toe', 20000);
+INSERT INTO my_employees VALUES (DEFAULT, 'Ali', 'Can', 5000);--DEFAULT will insert the value automacally created
+
+SELECT * FROM my_employees;
+
+--Ex 04: Set the salary 6000 if the employee_id is 3
+UPDATE my_employees
+SET salary = 6000
+WHERE employee_id = 3
+
+--Ex 05:
+
+-- Creating a table named "customers" with columns: customer_id, first_name, last_name
+CREATE TABLE customers (
+    customer_id serial PRIMARY KEY,
+    first_name varchar(50),
+    last_name varchar(50)
+);
+
+-- Inserting data into the "customers" table
+INSERT INTO customers (first_name, last_name)
+VALUES ('John', 'Doe'),
+       ('Jane', 'Smith'),
+	   ('Mary', 'Star'),
+	   ('Terry', 'Otar'),
+       ('Michael', 'Johnson');
+
+
+-- Creating a table named "orders" with columns: order_id, customer_id, order_date
+CREATE TABLE orders (
+    order_id serial PRIMARY KEY,
+    customer_id integer,
+    order_date date
+);
+
+-- Inserting data into the "orders" table
+INSERT INTO orders (customer_id, order_date)
+VALUES (1, '2023-08-25'),
+       (1, '2023-08-26'),
+       (2, '2023-08-27'),
+       (3, '2023-08-28'),
+       (3, '2023-08-29'),
+       (3, '2023-08-30');
+
+-- Selecting all data from the "orders" table
+SELECT * FROM orders;
+-- Selecting all data from the "customers" table
+SELECT * FROM customers;
+
+---Select first_name and last_name from the "customers" table for customers who have placed at least one order
+
+SELECT * FROM customers c
+WHERE EXISTS(
+
+	-- Subquery to check if there is at least one order placed by the current customer
+	SELECT 1
+	FROM orders o
+	WHERE o.customer_id = c.customer_id
+
+);
+
+--Ex 06: Select the customer_id and the count of orders for each customer from the 'orders' table.
+
+SELECT customer_id, COUNT(*)
+FROM orders
+GROUP BY customer_id --Grouping rows by customer_id
+HAVING COUNT(*) > 1 --Filtering rows by count numbers
+
+--Ex 07:
+
+-- Creating sample tables for employees and contractors
+CREATE TABLE employees (
+    id serial PRIMARY KEY,
+    name VARCHAR(100),
+    role VARCHAR(50)
+);
+
+CREATE TABLE contractors (
+    id serial PRIMARY KEY,
+    name VARCHAR(100),
+    role VARCHAR(50)
+);
+
+-- Inserting sample data into employees and contractors tables
+INSERT INTO employees (name, role) VALUES
+    ('John Doe', 'Manager'),
+    ('Jane Smith', 'Developer'),
+	('Emily Brown', 'QA');
+
+INSERT INTO contractors (name, role) VALUES
+    ('Michael Johnson', 'Designer'),
+    ('Emily Brown', 'QA'),
+	('John Doe', 'Manager');
+
+
+SELECT * FROM employees;
+SELECT * FROM contractors;
+
+--Combine select * results from employees and contractors
+
+SELECT name, role FROM employees
+
+UNION -- Combining with the following query's results while removing duplicates
+--UNION ALL --> This will combine queries with dublicate values
+SELECT name, role FROM contractors;
