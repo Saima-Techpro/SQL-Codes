@@ -1,0 +1,136 @@
+--Practice 03:
+
+--Ex 01:
+-- Creating sample tables
+CREATE TABLE students_in_class_a (
+    id serial PRIMARY KEY,
+    name VARCHAR(100)
+);
+
+CREATE TABLE students_in_class_b (
+    id serial PRIMARY KEY,
+    name VARCHAR(100)
+);
+
+-- Inserting sample data into class A
+INSERT INTO students_in_class_a (name) VALUES
+    ('John Doe'),
+    ('Jane Smith'),
+    ('Michael Johnson');
+
+-- Inserting sample data into class B
+INSERT INTO students_in_class_b (name) VALUES
+    ('John Doe'),
+    ('Emily Brown');
+
+SELECT * FROM students_in_class_a
+
+EXCEPT --Removes the names exist in the second query
+
+SELECT * FROM students_in_class_b;
+
+--Ex 02:
+
+-- Create my_companies table
+CREATE TABLE my_companies (
+    company_id integer,
+    company_name varchar(20)
+);
+
+-- Insert data into my_companies table
+INSERT INTO my_companies VALUES(100, 'Toyota');
+INSERT INTO my_companies VALUES(101, 'Honda');
+INSERT INTO my_companies VALUES(102, 'Ford');
+INSERT INTO my_companies VALUES(103, 'Hyundai');
+
+-- Create my_orders table
+CREATE TABLE my_orders (
+    order_id integer,
+    company_id integer,
+    order_date date
+);
+
+-- Insert data into my_orders table
+INSERT INTO my_orders VALUES(11, 101, '2020-04-17');
+INSERT INTO my_orders VALUES(22, 102, '2020-04-18');
+INSERT INTO my_orders VALUES(33, 103, '2020-04-19');
+INSERT INTO my_orders VALUES(44, 104, '2020-04-20');
+INSERT INTO my_orders VALUES(55, 105, '2020-04-21');
+
+-- Query my_orders table
+SELECT * FROM my_orders;
+
+-- Query companies table
+SELECT * FROM my_companies;
+
+
+SELECT company_name, order_id, order_date, my_orders.company_id
+FROM my_companies
+JOIN my_orders--JOIN --> Common values
+ON my_orders.company_id=my_companies.company_id
+
+
+SELECT company_name, order_id, order_date, my_orders.company_id
+FROM my_companies
+FULL JOIN my_orders --FULL JOIN --> All values
+ON my_orders.company_id=my_companies.company_id
+
+
+SELECT company_name, order_id, order_date, my_orders.company_id
+
+FROM my_companies
+
+LEFT JOIN my_orders --LEFT JOIN --> All values on left table and common values on right table
+
+ON my_orders.company_id=my_companies.company_id
+
+
+SELECT company_name, order_id, order_date, my_orders.company_id
+
+FROM my_companies
+
+RIGHT JOIN my_orders --RIGHT JOIN --> All values on right table and common values on left table
+
+ON my_orders.company_id=my_companies.company_id
+
+--Ex 03: Create a function that return first and last characters' concatenation of a given String
+
+CREATE OR REPLACE FUNCTION get_concatenated_chars(input_string VARCHAR)
+RETURNS VARCHAR AS $$
+DECLARE
+    first_char CHAR;
+    last_char CHAR;
+BEGIN
+    -- This block is where the actual function code begins
+    -- Declare variables to store the first and last characters
+    first_char := substr(input_string, 1, 1);
+    last_char := substr(input_string, length(input_string), 1);
+
+    -- Concatenate the first and last characters and return the result
+    RETURN first_char || last_char;
+
+-- This block is where the actual function code ends
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT get_concatenated_chars('Hello');
+
+--Ex 04: Create a function that will return the sum of the numbers that will start with given number until 100
+
+CREATE OR REPLACE FUNCTION sum_numbers_up_to_100(start_num integer)
+RETURNS integer AS
+$$
+DECLARE
+    sum_result integer := 0;
+BEGIN
+    WHILE start_num <= 100 LOOP
+        sum_result := sum_result + start_num;
+        start_num := start_num + 1;
+    END LOOP;
+
+    RETURN sum_result;
+END;
+$$
+LANGUAGE plpgsql;
+
+SELECT sum_numbers_up_to_100(99);
