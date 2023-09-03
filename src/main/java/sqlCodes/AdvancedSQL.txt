@@ -1,0 +1,519 @@
+
+Jace Backend Instructor
+
+AdvSQL179.sql
+
+-- comment
+/*
+
+	$$:  To be able to write some special characters between eachother, we can use dollar signs at the beginning.
+
+	do: Anonymous block. No return values (void)
+
+*/
+
+do $$
+declare
+
+	first_name varchar(50) := 'Jace';
+	last_name varchar(50) := 'ABC';
+
+begin
+
+	--System.out.println("")
+	raise notice 'First Name: %, Last Name: %', first_name, last_name;
+
+end $$;
+
+-- Explaining raise
+do $$
+declare
+
+	num1 integer = 1;
+
+begin
+
+	--raise notice 'Number: %', num1;
+	--raise warning 'Number: %', num1;
+	--raise error 'Number';
+
+end $$;
+
+
+
+-- TASK: Raise a notice: name lastname has received 20.5 USD. --> Dynamic: name, lastname, 20.5
+do $$
+declare
+
+	first_name varchar(50) = 'Jace';
+	last_name varchar(50) = 'ABC';
+	payment numeric(4,1) = 20.50;
+
+begin
+
+	raise notice '% % has received % USD.', first_name, last_name, payment;
+
+end $$;
+
+-- TASK: Name and DifferentName got tickets for 50 Dollars. --> Dynamic Values: Name, DifferentName, 50
+do $$
+declare
+
+	first_name varchar(50) := 'Jace';
+	different_name varchar(50) := 'John';
+	price integer := 50;
+
+begin
+
+	raise notice '% and % got tickets for % Dollars.', first_name, different_name, price;
+
+end $$;
+
+-- ** SLEEP COMMAND **
+do $$
+declare
+
+	created_at time := now(); -- Current Time
+
+begin
+
+	raise notice '%', created_at;
+	perform pg_sleep(5); -- Sleep Command
+	raise notice '%', created_at;
+
+end $$;
+
+/*
+LocalDateTime time = LocalDateTime.now(); -- 18:30:50
+System.out.println(time); -- 18:30:50
+Thread.sleep(5) -- Sleep Command in Java
+System.out.println(time); -- 18:30:50
+*/
+
+-- ** COPY THE DATA TYPE FROM TABLE **
+do $$
+declare
+
+	--movie_name text;
+	movie_name movie.title%type; -- text
+	/*
+	-- 1.
+	movie_name text = 'Uncharted'
+
+	-- 2.
+	movie_name movie.title%type = 'Uncharted';
+	-- Java: Movie.title.type();
+
+	-- 3.
+	movie_name movie.title%type;
+	*/
+
+begin
+
+	-- Get the title of the movie with ID: 1
+	SELECT title FROM movie
+	WHERE id = 1
+	INTO movie_name;
+
+	raise notice 'Movie Name: %', movie_name;
+
+
+end $$;
+
+-- ** COPYING THE WHOLE ROW'S DATA TYPE
+do $$
+declare
+
+	selected_movie movie%rowtype;
+
+begin
+
+	SELECT * FROM movie
+	WHERE id=1
+	INTO selected_movie;
+
+	raise notice 'Movie Title: %', selected_movie.title;
+	raise notice 'Movie Length: %', selected_movie.length;
+
+end $$;
+
+-- ** COPY SOME OF THE COLUMNS ONLY **
+-- RECORD
+do $$
+declare
+
+	selected_id_title record; -- record is a datatype.
+
+begin
+
+	SELECT id, title FROM movie
+	WHERE id=2
+	INTO selected_id_title;
+
+	raise notice 'ID: %', selected_id_title.id;
+	raise notice 'Title: %', selected_id_title.title;
+
+end $$;
+
+
+
+
+-- NESTED BLOCKS
+
+-- ** CONSTANT **
+-- final keyword
+
+do $$
+declare
+
+	x int = 5;
+	y constant int = 10; -- final: 10
+
+begin
+
+	raise notice 'X: %', x;
+	x = 8;
+	raise notice 'X: %', x;
+
+	raise notice 'Y: %', y;
+	y = 15;
+	raise notice 'Y: %', y;
+
+end $$;
+
+-- CONTROL STRUCTURES
+
+-- ** IF STATEMENT **
+--syntax:
+/*
+
+	if condition then
+		...
+	end if;
+
+	--
+
+	if x<y then
+		...
+	end if;
+
+	-->
+	if (x<y){
+		...
+	};
+
+*/
+
+-- Task 1: Find the movie with ID: 10, and if not found, print a message says it's not found.
+-- not found
+do $$
+declare
+
+	selected_movie movie%rowtype;
+
+begin
+
+	SELECT * FROM movie
+	WHERE id=10
+	INTO selected_movie;
+
+	if not found then
+		raise notice 'Not found! ID: %', selected_movie.id;
+	end if;
+
+end $$;
+
+-- ** IF / ELSE
+--syntax:
+/*
+
+	if condition then
+		...
+	else
+		...
+	end if;
+
+	--
+
+	if (){
+		...
+	}else{
+		...
+	}
+
+*/
+-- Task 2: Find the movie with ID: 10, and if not found, print a message says it's not found, if found, print the id.
+do $$
+declare
+
+	selected_movie movie%rowtype;
+
+	input_id integer = 10;
+
+begin
+
+	SELECT * FROM movie
+	WHERE id = input_id
+	INTO selected_movie;
+
+	if not found then
+		raise notice 'Movie with ID: %, not found!', input_id;
+	else
+		raise notice 'Movie ID: %', selected_movie.id;
+	end if;
+
+end $$;
+
+-- ** IF / ELSE-IF / ELSE
+--syntax:
+/*
+
+	if condition1 then
+		...
+	elsif condition2 then
+		...
+	elsif condition3 then
+		...
+	else
+		...
+	end if;
+
+*/
+/*
+	Task 1: Try to find the movie with ID:1. If the length is less than 50, print "Short",
+	if it's between 50 and 120, print "Average",
+	if it's more than 120, print "Long"
+*/
+
+do $$
+declare
+
+	selected_movie movie%rowtype;
+	description varchar(50);
+	selected_id integer = 1;
+
+begin
+
+	SELECT * FROM movie
+	WHERE id = selected_id
+	INTO selected_movie;
+
+	if not found then
+		raise notice 'Movie not found with ID: %', selected_id;
+	else
+
+		if selected_movie.length <= 50 then
+			description = 'Short';
+		elsif selected_movie.length >= 50 AND selected_movie.length <= 120 then
+			description = 'Average';
+		elsif selected_movie.length > 120 then
+			description = 'Long';
+		else
+			description = 'Movie length cannot be less than 0.';
+		end if;
+
+		raise notice '%', description;
+
+	end if;
+
+end $$;
+
+-- ** CASE STATEMENT **
+/*
+
+	case expression
+		when condition then
+			...;
+		when condition1 then
+			...;
+		when condition 2 then
+			...;
+		else
+			...;
+	end case;
+
+	--
+
+	switch num1{
+		case 1:
+			...;
+		case 2:
+			...;
+		default:
+			...;
+	}
+	-->
+
+	case num1
+		when 1 then
+			...;
+		when 2 then
+			...;
+		else
+			...;
+	end case;
+
+*/
+-- Task 1: Based on the type of movie, print whether if it's okay for children or not.
+do $$
+declare
+
+	movie_type movie.type%type;
+	description varchar(50);
+
+begin
+
+	SELECT type FROM movie
+	WHERE id = 4
+	INTO movie_type;
+
+	case movie_type
+		when 'Adventure' then
+			description = 'Children can watch it with their parents.';
+		when 'Horror' then
+			description = 'Children cannot watch it.';
+		when 'Animation' then
+			description = 'Children can watch it by themselves.';
+		else
+			description = 'None.';
+	end case;
+
+	raise notice '%', description;
+
+
+end $$;
+
+-- NOTE
+do $$
+declare
+
+	movie_count integer;
+
+begin
+
+	SELECT count(*) FROM movie
+	INTO movie_count;
+
+	raise notice 'Movie Count: %', movie_count;
+
+end $$;
+
+-- WHILE LOOP
+/*
+
+	while condition loop
+		...
+	end loop;
+
+	--
+
+	while x<y loop
+		...
+	end loop;
+
+*/
+
+-- Print the values from 1 to 4.
+
+do $$
+declare
+
+	counter integer := 1;
+
+begin
+
+	while counter<5 loop
+		raise notice '%', counter;
+		counter = counter+1;
+	end loop;
+
+end $$;
+
+-- ** FOR LOOP **
+/*
+
+	for loop_counter in from..to loop
+		...
+	end loop;
+
+	--
+
+	for (int i=0; i<..)
+
+*/
+
+do $$
+begin
+
+	for counter in 1..10 loop
+		raise notice '%', counter;
+	end loop;
+
+end $$;
+
+-- Reversed
+do $$
+begin
+
+	for counter in reverse 10..1 loop
+		raise notice '%', counter;
+	end loop;
+
+end $$;
+
+-- by
+do $$
+begin
+
+	for counter in 0..10 by 2 loop
+		raise notice '%', counter;
+	end loop;
+
+end $$;
+
+-- ** FUNCTIONS **
+/*
+
+	create/replace function func_name(parameters)
+	returns return_type
+	language plpgsql
+	as
+	$$
+	declare
+
+	begin
+
+	end $$;
+
+
+
+	--Java
+	void/int/datatype methodName(parameters){
+
+	}
+
+*/
+
+-- Create a function that gets the movie count
+create function get_movie_count()
+returns int
+language plpgsql
+as
+$$
+declare
+
+	movie_count integer;
+
+begin
+
+	SELECT count(*) FROM movie
+	INTO movie_count;
+
+	return movie_count;
+
+end $$;
+
+-- Let's use that function now!
+
+-- Run The Function:
+select get_movie_count()
